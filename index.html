@@ -180,7 +180,7 @@
 
   <section class="intro">
     <h1>Would you pay this much?</h1>
-    <p>Post something with a price tag. Everyone votes yes or no, then names the price they'd actually pay.</p>
+    <p>Post a used car, bike, or other big-ticket item with its asking price. Everyone votes yes or no, then names the price they'd actually pay.</p>
     <span class="preview">Preview · sample data, votes saved on this device only</span>
   </section>
 
@@ -197,10 +197,10 @@
       </button>
     </div>
     <div class="field-row">
-      <input id="text" maxlength="80" placeholder="Large movie popcorn" autocomplete="off" enterkeyhint="next" aria-label="What is it?">
-      <label class="money"><span>$</span><input id="price" inputmode="decimal" placeholder="12" autocomplete="off" enterkeyhint="next" aria-label="Price"></label>
+      <input id="text" maxlength="80" placeholder="2015 Subaru Outback, 120k" autocomplete="off" enterkeyhint="next" aria-label="What is it?">
+      <label class="money"><span>$</span><input id="price" inputmode="decimal" placeholder="9500" autocomplete="off" enterkeyhint="next" aria-label="Price ($100 minimum)"></label>
     </div>
-    <textarea id="desc" rows="2" maxlength="200" placeholder="Where or what exactly? (optional)" enterkeyhint="done"></textarea>
+    <textarea id="desc" rows="2" maxlength="200" placeholder="Condition, mileage, extras (optional)" enterkeyhint="done"></textarea>
     <div class="sheet-foot">
       <span class="count" id="count">80</span>
       <button class="post-btn" id="postBtn" disabled>Post</button>
@@ -213,6 +213,7 @@
 
 <script>
 const VERDICT_MIN = 5;
+const MIN_PRICE = 100;
 const HOUR = 3600;
 const ICON_YES = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
 const ICON_NO = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>`;
@@ -221,14 +222,16 @@ const ICON_NO = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 // database query, and the localStorage `state` becomes per-user rows.
 const now = Date.now() / 1000;
 const SAMPLE = [
-  { id: "s1", text: "Large movie theater popcorn", desc: "Butter refills included.", price: 12, yes: 18, no: 61, fair: [6, 7, 8, 8, 5, 9, 6], created: now - 3 * HOUR },
-  { id: "s2", text: "Front row concert ticket", desc: "Arena show, your favorite artist.", price: 450, yes: 52, no: 47, fair: [250, 300, 300, 200, 350], created: now - 7 * HOUR },
-  { id: "s3", text: "Avocado toast at brunch", desc: "Two slices, one egg on top.", price: 16, yes: 33, no: 40, fair: [10, 12, 12, 11, 9], created: now - 11 * HOUR },
-  { id: "s4", text: "Gym membership, per month", desc: "Pool, classes, no contract.", price: 60, yes: 71, no: 22, fair: [40, 45, 45, 50], created: now - 20 * HOUR },
-  { id: "s5", text: "Bottled water at the airport", desc: "", price: 6, yes: 9, no: 88, fair: [2, 2, 3, 2, 1, 3], created: now - 26 * HOUR },
-  { id: "s6", text: "Streaming service, per month", desc: "Top tier, no ads, 4K.", price: 25, yes: 38, no: 44, fair: [15, 15, 18, 12], created: now - 30 * HOUR },
-  { id: "s7", text: "Custom-tailored suit", desc: "Made to measure, ready in 4 weeks.", price: 1200, yes: 41, no: 19, fair: [800, 900, 700], created: now - 40 * HOUR },
-  { id: "s8", text: "Drive-thru coffee, large", desc: "Oat milk, extra shot.", price: 7.5, yes: 64, no: 58, fair: [5, 5, 6, 4, 5], created: now - 2 * HOUR },
+  { id: "s1", text: "2014 Honda Civic LX, 112k miles", desc: "Clean title, new tires, one owner.", price: 8500, yes: 47, no: 52, fair: [6500, 7000, 7000, 6000, 7500], created: now - 2 * HOUR },
+  { id: "s2", text: "Trek Marlin 7 mountain bike, 2019", desc: "Size large, new brake pads, a few scratches.", price: 650, yes: 38, no: 29, fair: [450, 500, 500, 400], created: now - 4 * HOUR },
+  { id: "s3", text: "2018 Ford F-150 XLT, 89k miles", desc: "4x4, tow package, no accidents.", price: 24000, yes: 61, no: 33, fair: [20000, 21000, 19000, 21500], created: now - 7 * HOUR },
+  { id: "s4", text: "Peloton bike, barely used", desc: "Comes with shoes and weights. No subscription.", price: 900, yes: 22, no: 71, fair: [400, 500, 450, 350, 500, 400], created: now - 10 * HOUR },
+  { id: "s5", text: "2008 Toyota Camry, 180k miles", desc: "Runs great, some dents, cold AC.", price: 4200, yes: 55, no: 31, fair: [3200, 3500, 3000], created: now - 14 * HOUR },
+  { id: "s6", text: "Rad Power RadCity e-bike", desc: "1,200 miles, battery replaced last year.", price: 1100, yes: 34, no: 36, fair: [800, 850, 750, 900], created: now - 18 * HOUR },
+  { id: "s7", text: "2016 Jeep Wrangler Unlimited, 95k miles", desc: "Lifted, 33 inch tires, hardtop and soft top.", price: 22500, yes: 44, no: 41, fair: [18000, 19000, 18500, 17000], created: now - 23 * HOUR },
+  { id: "s8", text: "2012 Harley-Davidson Sportster, 14k miles", desc: "Garage kept, new battery, extra seat.", price: 6800, yes: 29, no: 40, fair: [5000, 5500, 5000, 4500], created: now - 28 * HOUR },
+  { id: "s9", text: "Restored 1985 Peugeot road bike", desc: "Steel frame, new cables and tires.", price: 400, yes: 41, no: 18, fair: [300, 325, 275], created: now - 34 * HOUR },
+  { id: "s10", text: "2011 BMW 328i, 138k miles", desc: "Leather, sunroof, check engine light on.", price: 7900, yes: 12, no: 64, fair: [4500, 5000, 4000, 5000, 3500], created: now - 40 * HOUR },
 ];
 
 const STORE_KEY = "wyp-state-v1";
@@ -298,10 +301,12 @@ function median(nums) {
 function niceRound(n) {
   if (n < 10) return Math.round(n * 2) / 2;
   if (n < 100) return Math.round(n);
-  if (n < 1000) return Math.round(n / 5) * 5;
-  return Math.round(n / 50) * 50;
+  if (n < 1000) return Math.round(n / 25) * 25;
+  if (n < 10000) return Math.round(n / 50) * 50;
+  return Math.round(n / 500) * 500;
 }
-const fairChoices = price => [...new Set([0.75, 0.5, 0.25].map(f => niceRound(price * f)))].filter(n => n > 0);
+// Used-item haggling usually lands 10-30% under asking, so offer those counteroffers.
+const fairChoices = price => [...new Set([0.9, 0.8, 0.7].map(f => niceRound(price * f)))].filter(n => n > 0);
 
 function fairBlock(i) {
   if (i.myVote !== -1) return "";
@@ -410,7 +415,8 @@ $("price").addEventListener("keydown", e => { if (e.key === "Enter") { e.prevent
 $("post").addEventListener("submit", e => {
   e.preventDefault();
   const price = parsePrice();
-  if (price == null || price > 1e7) { $("err").textContent = "Enter a price, like 12 or 7.50."; return; }
+  if (price == null || price > 1e7) { $("err").textContent = "Enter a price, like 8500."; return; }
+  if (price < MIN_PRICE) { $("err").textContent = `Prices start at ${money(MIN_PRICE)}. Post something bigger.`; return; }
   state.posts.unshift({
     id: "u" + Date.now().toString(36), text: $("text").value.trim(), desc: $("desc").value.trim(),
     price, yes: 0, no: 0, fair: [], created: Date.now() / 1000,

@@ -8,28 +8,27 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Good or Bad">
+<meta name="apple-mobile-web-app-title" content="Would You Pay?">
 <meta name="format-detection" content="telephone=no">
-<meta name="description" content="Post an idea. Everyone votes: good idea or bad idea.">
-<title>Good Idea / Bad Idea</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0a'/%3E%3Cpath d='M16 7v18M7 16h18' stroke='white' stroke-width='3' stroke-linecap='round' transform='rotate(45 16 16)' opacity='.35'/%3E%3Cpath d='M10 16.5l4 4 8-9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<meta name="description" content="Post something with a price tag. Everyone votes: would you pay this much?">
+<title>Would You Pay This Much?</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0a'/%3E%3Ctext x='16' y='22.5' font-family='Arial' font-weight='700' font-size='18' fill='white' text-anchor='middle'%3E$%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="config.js"></script>
 <style>
   :root {
     --bg: #ffffff; --ink: #0a0a0a; --ink-2: #525252; --ink-3: #a3a3a3;
-    --line: #ececec; --line-2: #d9d9d9; --hover: #f5f5f5;
-    --good: #16a34a; --bad: #dc2626; --track: #ececec;
+    --line: #ececec; --line-2: #d9d9d9; --hover: #f5f5f5; --chip: #f4f4f4;
+    --yes: #16a34a; --no: #dc2626; --track: #ececec;
     --sheet: #ffffff; --scrim: rgba(0,0,0,.35);
     --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #0a0a0a; --ink: #fafafa; --ink-2: #a3a3a3; --ink-3: #5c5c5c;
-      --line: #1f1f1f; --line-2: #333333; --hover: #161616;
-      --good: #22c55e; --bad: #f87171; --track: #262626;
+      --line: #1f1f1f; --line-2: #333333; --hover: #161616; --chip: #1a1a1a;
+      --yes: #22c55e; --no: #f87171; --track: #262626;
       --sheet: #141414; --scrim: rgba(0,0,0,.6);
     }
   }
@@ -51,8 +50,8 @@
     border-bottom: 1px solid var(--line);
   }
   .bar { display: flex; align-items: center; justify-content: space-between; height: 56px; }
-  .brand { font-weight: 600; font-size: 16px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
-  .brand .g { color: var(--good); } .brand .b { color: var(--bad); } .brand .s { color: var(--ink-3); font-weight: 400; }
+  .brand { font-weight: 700; font-size: 16px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
+  .brand .mark { width: 24px; height: 24px; border-radius: 7px; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-size: 14px; }
   .new-btn {
     background: var(--ink); color: var(--bg); border: 0; border-radius: 999px;
     height: 34px; padding: 0 14px; font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 6px;
@@ -68,35 +67,49 @@
   .tab.on::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--ink); border-radius: 2px; }
 
   .intro { padding: 28px 0 8px; }
-  .intro h1 { font-size: 28px; line-height: 1.15; letter-spacing: -0.03em; font-weight: 600; margin: 0; }
-  .intro p { color: var(--ink-2); margin: 6px 0 0; }
+  .intro h1 { font-size: 30px; line-height: 1.1; letter-spacing: -0.035em; font-weight: 700; margin: 0; }
+  .intro p { color: var(--ink-2); margin: 8px 0 0; }
+  .preview { display: inline-block; margin-top: 12px; font-size: 12px; color: var(--ink-2); background: var(--chip); border-radius: 999px; padding: 3px 10px; }
 
   /* Rows */
-  .idea { padding: 20px 0; border-bottom: 1px solid var(--line); }
-  .idea-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-  .idea h2 { font-size: 17px; line-height: 1.35; font-weight: 600; letter-spacing: -0.015em; margin: 0; overflow-wrap: anywhere; }
-  .idea .desc { color: var(--ink-2); margin: 4px 0 0; overflow-wrap: anywhere; }
-  .meta { color: var(--ink-3); font-size: 13px; margin-top: 6px; }
-  .pill { flex: none; font-size: 12px; font-weight: 500; border: 1px solid currentColor; border-radius: 999px; padding: 1px 9px; margin-top: 2px; }
-  .pill.genius { color: var(--good); } .pill.terrible { color: var(--bad); } .pill.split { color: var(--ink-2); }
+  .item { padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .item-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
+  .item h2 { font-size: 17px; line-height: 1.35; font-weight: 600; letter-spacing: -0.015em; margin: 0; overflow-wrap: anywhere; }
+  .item .desc { color: var(--ink-2); margin: 3px 0 0; overflow-wrap: anywhere; }
+  .price { flex: none; font-size: 24px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .meta { color: var(--ink-3); font-size: 13px; margin-top: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pill { font-size: 12px; font-weight: 500; border: 1px solid currentColor; border-radius: 999px; padding: 0 8px; }
+  .pill.worth { color: var(--yes); } .pill.over { color: var(--no); } .pill.split { color: var(--ink-2); }
 
   .votes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
   .vote {
-    height: 40px; border-radius: 10px; border: 1px solid var(--line-2); background: transparent;
+    height: 42px; border-radius: 10px; border: 1px solid var(--line-2); background: transparent;
     font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px;
     transition: background .15s, border-color .15s, color .15s, transform .08s;
   }
   .vote svg { width: 15px; height: 15px; }
   .vote:active { transform: scale(.98); }
-  .vote.good.mine { color: var(--good); border-color: var(--good); background: color-mix(in srgb, var(--good) 8%, transparent); }
-  .vote.bad.mine { color: var(--bad); border-color: var(--bad); background: color-mix(in srgb, var(--bad) 8%, transparent); }
+  .vote.yes.mine { color: var(--yes); border-color: var(--yes); background: color-mix(in srgb, var(--yes) 8%, transparent); }
+  .vote.no.mine { color: var(--no); border-color: var(--no); background: color-mix(in srgb, var(--no) 8%, transparent); }
   @media (hover: hover) { .vote:not(.mine):hover { background: var(--hover); } }
 
   .result { margin-top: 12px; }
   .track { height: 4px; border-radius: 999px; background: var(--track); overflow: hidden; }
-  .track span { display: block; height: 100%; background: var(--good); border-radius: 999px; transition: width .5s cubic-bezier(.2,.8,.2,1); }
+  .track span { display: block; height: 100%; background: var(--yes); border-radius: 999px; transition: width .5s cubic-bezier(.2,.8,.2,1); }
   .split-row { display: flex; justify-content: space-between; font-size: 13px; margin-top: 6px; }
-  .split-row .g { color: var(--good); font-weight: 500; } .split-row .b { color: var(--ink-2); }
+  .split-row .y { color: var(--yes); font-weight: 500; } .split-row .n { color: var(--ink-2); }
+
+  .fair { margin-top: 12px; padding: 12px; border-radius: 12px; background: var(--chip); }
+  .fair-q { font-size: 13px; font-weight: 500; }
+  .chips { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .chip {
+    height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--bg);
+    font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums;
+  }
+  .chip.mine { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .fair-a { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--ink-2); }
+  .fair-a b { color: var(--ink); font-size: 16px; font-variant-numeric: tabular-nums; }
+  .fair-a + .chips { margin-top: 10px; }
 
   .empty { text-align: center; color: var(--ink-2); padding: 56px 0; }
   .empty button { margin-top: 12px; }
@@ -109,10 +122,7 @@
   }
   dialog::backdrop { background: var(--scrim); }
   @media (max-width: 600px) {
-    dialog {
-      margin: auto 0 0; max-width: none; border-radius: 16px 16px 0 0;
-      padding-bottom: env(safe-area-inset-bottom);
-    }
+    dialog { margin: auto 0 0; max-width: none; border-radius: 16px 16px 0 0; padding-bottom: env(safe-area-inset-bottom); }
     dialog[open] { animation: up .25s cubic-bezier(.2,.8,.2,1); }
   }
   @keyframes up { from { transform: translateY(100%); } }
@@ -121,6 +131,10 @@
   .sheet-head h3 { margin: 0; font-size: 16px; font-weight: 600; }
   .x { background: none; border: 0; width: 32px; height: 32px; border-radius: 50%; color: var(--ink-2); display: flex; align-items: center; justify-content: center; }
   .x:hover { background: var(--hover); }
+  .field-row { display: grid; grid-template-columns: 1fr 120px; gap: 8px; }
+  .money { position: relative; }
+  .money span { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink-2); font-weight: 600; pointer-events: none; }
+  .money input { padding-left: 26px; font-variant-numeric: tabular-nums; }
   input, textarea {
     width: 100%; border: 1px solid var(--line-2); border-radius: 10px; padding: 11px 12px;
     font: 16px/1.4 var(--sans); color: var(--ink); background: transparent; resize: none;
@@ -128,14 +142,14 @@
   }
   input { font-weight: 500; }
   textarea { margin-top: 8px; }
-  input::placeholder, textarea::placeholder { color: var(--ink-3); }
+  input::placeholder, textarea::placeholder { color: var(--ink-3); font-weight: 400; }
   input:focus, textarea:focus { outline: none; border-color: var(--ink); }
   .sheet-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
   .count { color: var(--ink-3); font-size: 13px; font-variant-numeric: tabular-nums; }
-  .count.over { color: var(--bad); }
+  .count.over { color: var(--no); }
   .post-btn { background: var(--ink); color: var(--bg); border: 0; border-radius: 999px; height: 40px; padding: 0 20px; font-weight: 500; }
   .post-btn:disabled { opacity: .3; cursor: default; }
-  .err { color: var(--bad); font-size: 13px; margin-top: 8px; }
+  .err { color: var(--no); font-size: 13px; margin-top: 8px; }
   .err:empty { display: none; }
 
   .toast {
@@ -150,23 +164,24 @@
 <div class="wrap">
   <header class="top">
     <div class="bar">
-      <div class="brand"><span class="g">Good idea</span><span class="s">/</span><span class="b">Bad idea</span></div>
-      <button class="new-btn" id="newBtn" aria-label="Post an idea">
+      <div class="brand"><span class="mark">$</span>Would you pay?</div>
+      <button class="new-btn" id="newBtn" aria-label="Post a price">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Post
       </button>
     </div>
     <nav class="tabs" id="tabs">
       <button class="tab on" data-sort="hot">Hot</button>
       <button class="tab" data-sort="new">New</button>
-      <button class="tab" data-sort="controversial">Contested</button>
-      <button class="tab" data-sort="loved">Best</button>
-      <button class="tab" data-sort="hated">Worst</button>
+      <button class="tab" data-sort="worth">Worth it</button>
+      <button class="tab" data-sort="over">Overpriced</button>
+      <button class="tab" data-sort="contested">Contested</button>
     </nav>
   </header>
 
   <section class="intro">
-    <h1>Is it a good idea?</h1>
-    <p>Post an idea. Everyone votes. Vote to see the split.</p>
+    <h1>Would you pay this much?</h1>
+    <p>Post something with a price tag. Everyone votes yes or no, then names the price they'd actually pay.</p>
+    <span class="preview">Preview · sample data, votes saved on this device only</span>
   </section>
 
   <main id="list"></main>
@@ -176,15 +191,18 @@
 <dialog id="sheet" aria-labelledby="sheetTitle">
   <form class="sheet" id="post" method="dialog">
     <div class="sheet-head">
-      <h3 id="sheetTitle">Post an idea</h3>
+      <h3 id="sheetTitle">Post a price</h3>
       <button type="button" class="x" id="closeBtn" aria-label="Close">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
       </button>
     </div>
-    <input id="text" maxlength="140" placeholder="Replace all stairs with slides" autocomplete="off" enterkeyhint="next">
-    <textarea id="desc" rows="2" maxlength="280" placeholder="Add a detail (optional)" enterkeyhint="done"></textarea>
+    <div class="field-row">
+      <input id="text" maxlength="80" placeholder="Large movie popcorn" autocomplete="off" enterkeyhint="next" aria-label="What is it?">
+      <label class="money"><span>$</span><input id="price" inputmode="decimal" placeholder="12" autocomplete="off" enterkeyhint="next" aria-label="Price"></label>
+    </div>
+    <textarea id="desc" rows="2" maxlength="200" placeholder="Where or what exactly? (optional)" enterkeyhint="done"></textarea>
     <div class="sheet-foot">
-      <span class="count" id="count">140</span>
+      <span class="count" id="count">80</span>
       <button class="post-btn" id="postBtn" disabled>Post</button>
     </div>
     <div class="err" id="err"></div>
@@ -195,72 +213,47 @@
 
 <script>
 const VERDICT_MIN = 5;
-const ICON_UP = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v11M15 5.9 14 10h5.8a2 2 0 0 1 2 2.3l-1.4 7A2 2 0 0 1 18.4 21H7V10l4.4-7.3A1.9 1.9 0 0 1 15 5.9Z"/></svg>`;
-const ICON_DOWN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V3M9 18.1 10 14H4.2a2 2 0 0 1-2-2.3l1.4-7A2 2 0 0 1 5.6 3H17v11l-4.4 7.3A1.9 1.9 0 0 1 9 18.1Z"/></svg>`;
+const HOUR = 3600;
+const ICON_YES = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
+const ICON_NO = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>`;
 
-let voter;
-try {
-  voter = localStorage.getItem("gibi-voter");
-  if (!voter) { voter = crypto.randomUUID(); localStorage.setItem("gibi-voter", voter); }
-} catch { voter = "anon-" + Math.random().toString(36).slice(2); }
+// Placeholder data. Swap this layer for a real backend later: SAMPLE becomes a
+// database query, and the localStorage `state` becomes per-user rows.
+const now = Date.now() / 1000;
+const SAMPLE = [
+  { id: "s1", text: "Large movie theater popcorn", desc: "Butter refills included.", price: 12, yes: 18, no: 61, fair: [6, 7, 8, 8, 5, 9, 6], created: now - 3 * HOUR },
+  { id: "s2", text: "Front row concert ticket", desc: "Arena show, your favorite artist.", price: 450, yes: 52, no: 47, fair: [250, 300, 300, 200, 350], created: now - 7 * HOUR },
+  { id: "s3", text: "Avocado toast at brunch", desc: "Two slices, one egg on top.", price: 16, yes: 33, no: 40, fair: [10, 12, 12, 11, 9], created: now - 11 * HOUR },
+  { id: "s4", text: "Gym membership, per month", desc: "Pool, classes, no contract.", price: 60, yes: 71, no: 22, fair: [40, 45, 45, 50], created: now - 20 * HOUR },
+  { id: "s5", text: "Bottled water at the airport", desc: "", price: 6, yes: 9, no: 88, fair: [2, 2, 3, 2, 1, 3], created: now - 26 * HOUR },
+  { id: "s6", text: "Streaming service, per month", desc: "Top tier, no ads, 4K.", price: 25, yes: 38, no: 44, fair: [15, 15, 18, 12], created: now - 30 * HOUR },
+  { id: "s7", text: "Custom-tailored suit", desc: "Made to measure, ready in 4 weeks.", price: 1200, yes: 41, no: 19, fair: [800, 900, 700], created: now - 40 * HOUR },
+  { id: "s8", text: "Drive-thru coffee, large", desc: "Oat milk, extra shot.", price: 7.5, yes: 64, no: 58, fair: [5, 5, 6, 4, 5], created: now - 2 * HOUR },
+];
 
-// Data layer: Supabase when config.js provides it (the live site), else the local Python server.
-const SB = window.APP_CONFIG && window.APP_CONFIG.supabaseUrl ? window.APP_CONFIG : null;
+const STORE_KEY = "wyp-state-v1";
+let state = { posts: [], votes: {}, fair: {} };
+try { Object.assign(state, JSON.parse(localStorage.getItem(STORE_KEY)) || {}); } catch {}
+const persist = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch {} };
 
-function sbFetch(path, body) {
-  return fetch(`${SB.supabaseUrl}/rest/v1/${path}`, {
-    method: body ? "POST" : "GET",
-    headers: {
-      apikey: SB.supabaseAnonKey, Authorization: `Bearer ${SB.supabaseAnonKey}`,
-      "Content-Type": "application/json", Prefer: "return=representation",
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-}
-const fromRow = r => ({
-  id: r.id, text: r.text, desc: r.description || "", up: r.up, down: r.down,
-  created: new Date(r.created_at).getTime() / 1000, myVote: r.my_vote || 0,
-});
-
-const api = {
-  async list() {
-    if (!SB) return (await fetch(`/api/ideas?voter=${encodeURIComponent(voter)}`)).json();
-    const [ideasRes, mineRes] = await Promise.all([
-      sbFetch("ideas?select=*&order=created_at.desc&limit=500"),
-      sbFetch("rpc/my_votes", { p_voter: voter }),
-    ]);
-    if (!ideasRes.ok) throw new Error("load failed");
-    const mine = mineRes.ok ? Object.fromEntries((await mineRes.json()).map(v => [v.idea_id, v.value])) : {};
-    return (await ideasRes.json()).map(r => fromRow({ ...r, my_vote: mine[r.id] }));
-  },
-  async post(text, desc) {
-    if (!SB) {
-      const res = await fetch("/api/ideas", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, desc, voter }) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      return data;
-    }
-    const res = await sbFetch("ideas", { text, description: desc });
-    if (!res.ok) throw new Error("Couldn't post that. Try again.");
-    return fromRow((await res.json())[0]);
-  },
-  async vote(id, value) {
-    if (!SB) {
-      const res = await fetch("/api/vote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, voter, vote: value }) });
-      if (!res.ok) throw new Error("vote failed");
-      return res.json();
-    }
-    const res = await sbFetch("rpc/cast_vote", { p_idea: id, p_voter: voter, p_value: value });
-    if (!res.ok) throw new Error("vote failed");
-    return fromRow({ ...(await res.json())[0], my_vote: value });
-  },
-};
-
-let ideas = [];
 let sort = "hot";
-
 const $ = id => document.getElementById(id);
 const esc = s => s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const money = n => "$" + (Number.isInteger(n) ? n.toLocaleString() : n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+
+// Combine the base counts with this device's vote and fair-price pick.
+function items() {
+  return [...state.posts, ...SAMPLE].map(base => {
+    const myVote = state.votes[base.id] || 0;
+    const myFair = state.fair[base.id];
+    return {
+      ...base, myVote, myFair,
+      yes: base.yes + (myVote === 1 ? 1 : 0),
+      no: base.no + (myVote === -1 ? 1 : 0),
+      fair: myFair != null ? [...base.fair, myFair] : base.fair,
+    };
+  });
+}
 
 function toast(msg) {
   $("toast").textContent = msg;
@@ -272,80 +265,113 @@ function toast(msg) {
 function ago(t) {
   const s = Date.now() / 1000 - t;
   if (s < 60) return "just now";
-  if (s < 3600) return Math.floor(s / 60) + "m";
-  if (s < 86400) return Math.floor(s / 3600) + "h";
+  if (s < HOUR) return Math.floor(s / 60) + "m";
+  if (s < 86400) return Math.floor(s / HOUR) + "h";
   return Math.floor(s / 86400) + "d";
 }
 
-const total = i => i.up + i.down;
+const total = i => i.yes + i.no;
 const scorers = {
-  hot: i => (total(i) + 1) / Math.pow((Date.now() / 1000 - i.created) / 3600 + 2, 1.5),
+  hot: i => (total(i) + 1) / Math.pow((Date.now() / 1000 - i.created) / HOUR + 2, 1.5),
   new: i => i.created,
-  controversial: i => total(i) ? total(i) * (1 - Math.abs(i.up - i.down) / total(i)) : -1,
-  loved: i => total(i) ? i.up / total(i) + total(i) / 1e6 : -1,
-  hated: i => total(i) ? i.down / total(i) + total(i) / 1e6 : -1,
+  worth: i => total(i) ? i.yes / total(i) + total(i) / 1e6 : -1,
+  over: i => total(i) ? i.no / total(i) + total(i) / 1e6 : -1,
+  contested: i => total(i) ? total(i) * (1 - Math.abs(i.yes - i.no) / total(i)) : -1,
 };
 
 function verdict(i) {
   if (total(i) < VERDICT_MIN) return "";
-  const pct = i.up / total(i);
-  if (pct >= 0.65) return `<span class="pill genius">Good idea</span>`;
-  if (pct <= 0.35) return `<span class="pill terrible">Bad idea</span>`;
+  const pct = i.yes / total(i);
+  if (pct >= 0.6) return `<span class="pill worth">Worth it</span>`;
+  if (pct <= 0.4) return `<span class="pill over">Overpriced</span>`;
   return `<span class="pill split">Split</span>`;
+}
+
+function median(nums) {
+  if (!nums.length) return null;
+  const s = [...nums].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+// Round suggested prices to something a person would actually say.
+function niceRound(n) {
+  if (n < 10) return Math.round(n * 2) / 2;
+  if (n < 100) return Math.round(n);
+  if (n < 1000) return Math.round(n / 5) * 5;
+  return Math.round(n / 50) * 50;
+}
+const fairChoices = price => [...new Set([0.75, 0.5, 0.25].map(f => niceRound(price * f)))].filter(n => n > 0);
+
+function fairBlock(i) {
+  if (i.myVote !== -1) return "";
+  const crowd = median(i.fair);
+  const chips = fairChoices(i.price).map(n =>
+    `<button class="chip ${i.myFair === n ? "mine" : ""}" data-fair="${n}">${money(n)}</button>`).join("");
+  if (i.myFair == null) {
+    return `<div class="fair"><div class="fair-q">What would you pay?</div><div class="chips">${chips}</div></div>`;
+  }
+  return `<div class="fair">
+    <div class="fair-a"><span>Crowd's fair price</span><b>${money(niceRound(crowd))}</b></div>
+    <div class="chips">${chips}</div>
+  </div>`;
 }
 
 function card(i) {
   const voted = i.myVote !== 0;
-  const pct = total(i) ? Math.round(i.up / total(i) * 100) : 0;
+  const pct = total(i) ? Math.round(i.yes / total(i) * 100) : 0;
   return `
-  <article class="idea" data-id="${i.id}">
-    <div class="idea-head">
+  <article class="item" data-id="${i.id}">
+    <div class="item-head">
       <div>
         <h2>${esc(i.text)}</h2>
         ${i.desc ? `<p class="desc">${esc(i.desc)}</p>` : ""}
       </div>
-      ${voted ? verdict(i) : ""}
+      <div class="price">${money(i.price)}</div>
     </div>
-    <div class="meta">${ago(i.created)} · ${total(i)} vote${total(i) === 1 ? "" : "s"}</div>
+    <div class="meta">${ago(i.created)} · ${total(i)} vote${total(i) === 1 ? "" : "s"}${voted ? verdict(i) : ""}</div>
     <div class="votes">
-      <button class="vote good ${i.myVote === 1 ? "mine" : ""}" data-v="1">${ICON_UP}Good</button>
-      <button class="vote bad ${i.myVote === -1 ? "mine" : ""}" data-v="-1">${ICON_DOWN}Bad</button>
+      <button class="vote yes ${i.myVote === 1 ? "mine" : ""}" data-v="1">${ICON_YES}I'd pay</button>
+      <button class="vote no ${i.myVote === -1 ? "mine" : ""}" data-v="-1">${ICON_NO}No way</button>
     </div>
     ${voted ? `
     <div class="result">
       <div class="track"><span style="width:${pct}%"></span></div>
-      <div class="split-row"><span class="g">${pct}% good</span><span class="b">${100 - pct}% bad</span></div>
+      <div class="split-row"><span class="y">${pct}% would pay</span><span class="n">${100 - pct}% wouldn't</span></div>
     </div>` : ""}
+    ${fairBlock(i)}
   </article>`;
 }
 
 function render() {
-  const sorted = [...ideas].sort((a, b) => scorers[sort](b) - scorers[sort](a));
+  const sorted = items().sort((a, b) => scorers[sort](b) - scorers[sort](a));
   $("list").innerHTML = sorted.length ? sorted.map(card).join("")
-    : `<div class="empty">No ideas yet.<br><button class="post-btn" onclick="openSheet()">Post the first one</button></div>`;
+    : `<div class="empty">Nothing posted yet.<br><button class="post-btn" onclick="openSheet()">Post the first price</button></div>`;
 }
 
-async function load() {
-  try { ideas = await api.list(); render(); }
-  catch { if (!ideas.length) $("list").innerHTML = `<div class="empty">Couldn't load ideas. Check your connection.</div>`; }
+function rerenderCard(id) {
+  const fresh = items().find(i => i.id === id);
+  const el = document.querySelector(`.item[data-id="${id}"]`);
+  if (el && fresh) el.outerHTML = card(fresh);
 }
 
-$("list").addEventListener("click", async e => {
-  const btn = e.target.closest(".vote");
-  if (!btn) return;
-  const id = btn.closest(".idea").dataset.id;
-  const idea = ideas.find(i => i.id === id);
-  const v = Number(btn.dataset.v);
-  let updated;
-  try { updated = await api.vote(id, idea.myVote === v ? 0 : v); }
-  catch { toast("Vote didn't go through"); return; }
-  // The list may have been reloaded while the vote was in flight, so look both up fresh.
-  const current = ideas.find(i => i.id === id);
-  if (current) Object.assign(current, updated);
+$("list").addEventListener("click", e => {
+  const voteBtn = e.target.closest(".vote");
+  const fairBtn = e.target.closest(".chip");
+  const id = e.target.closest(".item")?.dataset.id;
+  if (!id) return;
+  if (voteBtn) {
+    const v = Number(voteBtn.dataset.v);
+    if (state.votes[id] === v) delete state.votes[id]; else state.votes[id] = v;
+    if (state.votes[id] !== -1) delete state.fair[id];
+    if (navigator.vibrate) navigator.vibrate(8);
+  } else if (fairBtn) {
+    const n = Number(fairBtn.dataset.fair);
+    if (state.fair[id] === n) delete state.fair[id]; else state.fair[id] = n;
+  } else return;
+  persist();
   // Re-render just this card so the list doesn't jump around under your finger.
-  const el = document.querySelector(`.idea[data-id="${id}"]`);
-  if (el && current) el.outerHTML = card(current);
-  if (navigator.vibrate) navigator.vibrate(8);
+  rerenderCard(id);
 });
 
 $("tabs").addEventListener("click", e => {
@@ -366,37 +392,38 @@ $("newBtn").addEventListener("click", openSheet);
 $("closeBtn").addEventListener("click", () => $("sheet").close());
 $("sheet").addEventListener("click", e => { if (e.target === $("sheet")) $("sheet").close(); });
 
-$("text").addEventListener("input", () => {
-  const left = 140 - $("text").value.length;
+const parsePrice = () => {
+  const n = parseFloat($("price").value.replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
+};
+function validate() {
+  const left = 80 - $("text").value.length;
   $("count").textContent = left;
-  $("count").classList.toggle("over", left < 15);
-  $("postBtn").disabled = $("text").value.trim().length < 3;
-});
-$("text").addEventListener("keydown", e => {
-  if (e.key === "Enter") { e.preventDefault(); $("desc").focus(); }
-});
+  $("count").classList.toggle("over", left < 10);
+  $("postBtn").disabled = $("text").value.trim().length < 3 || parsePrice() == null;
+}
+$("text").addEventListener("input", validate);
+$("price").addEventListener("input", validate);
+$("text").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("price").focus(); } });
+$("price").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("desc").focus(); } });
 
-$("post").addEventListener("submit", async e => {
+$("post").addEventListener("submit", e => {
   e.preventDefault();
-  $("err").textContent = "";
-  $("postBtn").disabled = true;
-  try {
-    const idea = await api.post($("text").value.trim(), $("desc").value.trim());
-    ideas.push(idea);
-    $("text").value = ""; $("desc").value = "";
-    $("text").dispatchEvent(new Event("input"));
-    $("sheet").close();
-    document.querySelector('.tab[data-sort="new"]').click();
-    toast("Posted");
-  } catch (err) {
-    $("err").textContent = err.message || "Something went wrong.";
-    $("postBtn").disabled = false;
-  }
+  const price = parsePrice();
+  if (price == null || price > 1e7) { $("err").textContent = "Enter a price, like 12 or 7.50."; return; }
+  state.posts.unshift({
+    id: "u" + Date.now().toString(36), text: $("text").value.trim(), desc: $("desc").value.trim(),
+    price, yes: 0, no: 0, fair: [], created: Date.now() / 1000,
+  });
+  persist();
+  $("post").reset();
+  validate();
+  $("sheet").close();
+  document.querySelector('.tab[data-sort="new"]').click();
+  toast("Posted");
 });
 
-load();
-setInterval(load, 15000);
-document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+render();
 </script>
 </body>
 </html>

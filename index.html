@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Good or Bad">
+<meta name="format-detection" content="telephone=no">
+<meta name="description" content="Post an idea. Everyone votes: good idea or bad idea.">
+<title>Good Idea / Bad Idea</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a0a0a'/%3E%3Cpath d='M16 7v18M7 16h18' stroke='white' stroke-width='3' stroke-linecap='round' transform='rotate(45 16 16)' opacity='.35'/%3E%3Cpath d='M10 16.5l4 4 8-9' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+  :root {
+    --bg: #ffffff; --ink: #0a0a0a; --ink-2: #525252; --ink-3: #a3a3a3;
+    --line: #ececec; --line-2: #d9d9d9; --hover: #f5f5f5;
+    --good: #16a34a; --bad: #dc2626; --track: #ececec;
+    --sheet: #ffffff; --scrim: rgba(0,0,0,.35);
+    --sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0a0a0a; --ink: #fafafa; --ink-2: #a3a3a3; --ink-3: #5c5c5c;
+      --line: #1f1f1f; --line-2: #333333; --hover: #161616;
+      --good: #22c55e; --bad: #f87171; --track: #262626;
+      --sheet: #141414; --scrim: rgba(0,0,0,.6);
+    }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; overflow-x: hidden;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
+  .wrap { max-width: 620px; margin: 0 auto; padding: 0 max(16px, env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+
+  /* Top bar */
+  .top {
+    position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(180%) blur(12px); -webkit-backdrop-filter: saturate(180%) blur(12px);
+    margin: 0 calc(-1 * max(16px, env(safe-area-inset-right))) 0 calc(-1 * max(16px, env(safe-area-inset-left)));
+    padding: env(safe-area-inset-top) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
+    border-bottom: 1px solid var(--line);
+  }
+  .bar { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  .brand { font-weight: 600; font-size: 16px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
+  .brand .g { color: var(--good); } .brand .b { color: var(--bad); } .brand .s { color: var(--ink-3); font-weight: 400; }
+  .new-btn {
+    background: var(--ink); color: var(--bg); border: 0; border-radius: 999px;
+    height: 34px; padding: 0 14px; font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 6px;
+  }
+  .new-btn svg { width: 14px; height: 14px; }
+  .tabs { display: flex; gap: 20px; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    background: none; border: 0; padding: 4px 0 12px; font-size: 14px; font-weight: 500; color: var(--ink-3);
+    white-space: nowrap; position: relative; flex: none;
+  }
+  .tab.on { color: var(--ink); }
+  .tab.on::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--ink); border-radius: 2px; }
+
+  .intro { padding: 28px 0 8px; }
+  .intro h1 { font-size: 28px; line-height: 1.15; letter-spacing: -0.03em; font-weight: 600; margin: 0; }
+  .intro p { color: var(--ink-2); margin: 6px 0 0; }
+
+  /* Rows */
+  .idea { padding: 20px 0; border-bottom: 1px solid var(--line); }
+  .idea-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .idea h2 { font-size: 17px; line-height: 1.35; font-weight: 600; letter-spacing: -0.015em; margin: 0; overflow-wrap: anywhere; }
+  .idea .desc { color: var(--ink-2); margin: 4px 0 0; overflow-wrap: anywhere; }
+  .meta { color: var(--ink-3); font-size: 13px; margin-top: 6px; }
+  .pill { flex: none; font-size: 12px; font-weight: 500; border: 1px solid currentColor; border-radius: 999px; padding: 1px 9px; margin-top: 2px; }
+  .pill.genius { color: var(--good); } .pill.terrible { color: var(--bad); } .pill.split { color: var(--ink-2); }
+
+  .votes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+  .vote {
+    height: 40px; border-radius: 10px; border: 1px solid var(--line-2); background: transparent;
+    font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background .15s, border-color .15s, color .15s, transform .08s;
+  }
+  .vote svg { width: 15px; height: 15px; }
+  .vote:active { transform: scale(.98); }
+  .vote.good.mine { color: var(--good); border-color: var(--good); background: color-mix(in srgb, var(--good) 8%, transparent); }
+  .vote.bad.mine { color: var(--bad); border-color: var(--bad); background: color-mix(in srgb, var(--bad) 8%, transparent); }
+  @media (hover: hover) { .vote:not(.mine):hover { background: var(--hover); } }
+
+  .result { margin-top: 12px; }
+  .track { height: 4px; border-radius: 999px; background: var(--track); overflow: hidden; }
+  .track span { display: block; height: 100%; background: var(--good); border-radius: 999px; transition: width .5s cubic-bezier(.2,.8,.2,1); }
+  .split-row { display: flex; justify-content: space-between; font-size: 13px; margin-top: 6px; }
+  .split-row .g { color: var(--good); font-weight: 500; } .split-row .b { color: var(--ink-2); }
+
+  .empty { text-align: center; color: var(--ink-2); padding: 56px 0; }
+  .empty button { margin-top: 12px; }
+  footer { color: var(--ink-3); font-size: 13px; text-align: center; margin-top: 32px; }
+
+  /* Compose sheet */
+  dialog {
+    border: 0; padding: 0; background: var(--sheet); color: var(--ink); width: 100%; max-width: 520px;
+    border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  }
+  dialog::backdrop { background: var(--scrim); }
+  @media (max-width: 600px) {
+    dialog {
+      margin: auto 0 0; max-width: none; border-radius: 16px 16px 0 0;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    dialog[open] { animation: up .25s cubic-bezier(.2,.8,.2,1); }
+  }
+  @keyframes up { from { transform: translateY(100%); } }
+  .sheet { padding: 18px 16px 16px; }
+  .sheet-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .sheet-head h3 { margin: 0; font-size: 16px; font-weight: 600; }
+  .x { background: none; border: 0; width: 32px; height: 32px; border-radius: 50%; color: var(--ink-2); display: flex; align-items: center; justify-content: center; }
+  .x:hover { background: var(--hover); }
+  input, textarea {
+    width: 100%; border: 1px solid var(--line-2); border-radius: 10px; padding: 11px 12px;
+    font: 16px/1.4 var(--sans); color: var(--ink); background: transparent; resize: none;
+    -webkit-appearance: none; appearance: none;
+  }
+  input { font-weight: 500; }
+  textarea { margin-top: 8px; }
+  input::placeholder, textarea::placeholder { color: var(--ink-3); }
+  input:focus, textarea:focus { outline: none; border-color: var(--ink); }
+  .sheet-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  .count { color: var(--ink-3); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .count.over { color: var(--bad); }
+  .post-btn { background: var(--ink); color: var(--bg); border: 0; border-radius: 999px; height: 40px; padding: 0 20px; font-weight: 500; }
+  .post-btn:disabled { opacity: .3; cursor: default; }
+  .err { color: var(--bad); font-size: 13px; margin-top: 8px; }
+  .err:empty { display: none; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px);
+    background: var(--ink); color: var(--bg); font-size: 14px; font-weight: 500; padding: 10px 16px; border-radius: 999px;
+    opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; z-index: 20;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="bar">
+      <div class="brand"><span class="g">Good idea</span><span class="s">/</span><span class="b">Bad idea</span></div>
+      <button class="new-btn" id="newBtn" aria-label="Post an idea">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Post
+      </button>
+    </div>
+    <nav class="tabs" id="tabs">
+      <button class="tab on" data-sort="hot">Hot</button>
+      <button class="tab" data-sort="new">New</button>
+      <button class="tab" data-sort="controversial">Contested</button>
+      <button class="tab" data-sort="loved">Best</button>
+      <button class="tab" data-sort="hated">Worst</button>
+    </nav>
+  </header>
+
+  <section class="intro">
+    <h1>Is it a good idea?</h1>
+    <p>Post an idea. Everyone votes. Vote to see the split.</p>
+  </section>
+
+  <main id="list"></main>
+  <footer>Tap your vote again to undo it.</footer>
+</div>
+
+<dialog id="sheet" aria-labelledby="sheetTitle">
+  <form class="sheet" id="post" method="dialog">
+    <div class="sheet-head">
+      <h3 id="sheetTitle">Post an idea</h3>
+      <button type="button" class="x" id="closeBtn" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <input id="text" maxlength="140" placeholder="Replace all stairs with slides" autocomplete="off" enterkeyhint="next">
+    <textarea id="desc" rows="2" maxlength="280" placeholder="Add a detail (optional)" enterkeyhint="done"></textarea>
+    <div class="sheet-foot">
+      <span class="count" id="count">140</span>
+      <button class="post-btn" id="postBtn" disabled>Post</button>
+    </div>
+    <div class="err" id="err"></div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const VERDICT_MIN = 5;
+const ICON_UP = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v11M15 5.9 14 10h5.8a2 2 0 0 1 2 2.3l-1.4 7A2 2 0 0 1 18.4 21H7V10l4.4-7.3A1.9 1.9 0 0 1 15 5.9Z"/></svg>`;
+const ICON_DOWN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V3M9 18.1 10 14H4.2a2 2 0 0 1-2-2.3l1.4-7A2 2 0 0 1 5.6 3H17v11l-4.4 7.3A1.9 1.9 0 0 1 9 18.1Z"/></svg>`;
+
+let voter;
+try {
+  voter = localStorage.getItem("gibi-voter");
+  if (!voter) { voter = crypto.randomUUID(); localStorage.setItem("gibi-voter", voter); }
+} catch { voter = "anon-" + Math.random().toString(36).slice(2); }
+
+// Data layer: Supabase when config.js provides it (the live site), else the local Python server.
+const SB = window.APP_CONFIG && window.APP_CONFIG.supabaseUrl ? window.APP_CONFIG : null;
+
+function sbFetch(path, body) {
+  return fetch(`${SB.supabaseUrl}/rest/v1/${path}`, {
+    method: body ? "POST" : "GET",
+    headers: {
+      apikey: SB.supabaseAnonKey, Authorization: `Bearer ${SB.supabaseAnonKey}`,
+      "Content-Type": "application/json", Prefer: "return=representation",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+}
+const fromRow = r => ({
+  id: r.id, text: r.text, desc: r.description || "", up: r.up, down: r.down,
+  created: new Date(r.created_at).getTime() / 1000, myVote: r.my_vote || 0,
+});
+
+const api = {
+  async list() {
+    if (!SB) return (await fetch(`/api/ideas?voter=${encodeURIComponent(voter)}`)).json();
+    const [ideasRes, mineRes] = await Promise.all([
+      sbFetch("ideas?select=*&order=created_at.desc&limit=500"),
+      sbFetch("rpc/my_votes", { p_voter: voter }),
+    ]);
+    if (!ideasRes.ok) throw new Error("load failed");
+    const mine = mineRes.ok ? Object.fromEntries((await mineRes.json()).map(v => [v.idea_id, v.value])) : {};
+    return (await ideasRes.json()).map(r => fromRow({ ...r, my_vote: mine[r.id] }));
+  },
+  async post(text, desc) {
+    if (!SB) {
+      const res = await fetch("/api/ideas", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, desc, voter }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      return data;
+    }
+    const res = await sbFetch("ideas", { text, description: desc });
+    if (!res.ok) throw new Error("Couldn't post that. Try again.");
+    return fromRow((await res.json())[0]);
+  },
+  async vote(id, value) {
+    if (!SB) {
+      const res = await fetch("/api/vote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, voter, vote: value }) });
+      if (!res.ok) throw new Error("vote failed");
+      return res.json();
+    }
+    const res = await sbFetch("rpc/cast_vote", { p_idea: id, p_voter: voter, p_value: value });
+    if (!res.ok) throw new Error("vote failed");
+    return fromRow({ ...(await res.json())[0], my_vote: value });
+  },
+};
+
+let ideas = [];
+let sort = "hot";
+
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function toast(msg) {
+  $("toast").textContent = msg;
+  $("toast").classList.add("show");
+  clearTimeout(toast.t);
+  toast.t = setTimeout(() => $("toast").classList.remove("show"), 1800);
+}
+
+function ago(t) {
+  const s = Date.now() / 1000 - t;
+  if (s < 60) return "just now";
+  if (s < 3600) return Math.floor(s / 60) + "m";
+  if (s < 86400) return Math.floor(s / 3600) + "h";
+  return Math.floor(s / 86400) + "d";
+}
+
+const total = i => i.up + i.down;
+const scorers = {
+  hot: i => (total(i) + 1) / Math.pow((Date.now() / 1000 - i.created) / 3600 + 2, 1.5),
+  new: i => i.created,
+  controversial: i => total(i) ? total(i) * (1 - Math.abs(i.up - i.down) / total(i)) : -1,
+  loved: i => total(i) ? i.up / total(i) + total(i) / 1e6 : -1,
+  hated: i => total(i) ? i.down / total(i) + total(i) / 1e6 : -1,
+};
+
+function verdict(i) {
+  if (total(i) < VERDICT_MIN) return "";
+  const pct = i.up / total(i);
+  if (pct >= 0.65) return `<span class="pill genius">Good idea</span>`;
+  if (pct <= 0.35) return `<span class="pill terrible">Bad idea</span>`;
+  return `<span class="pill split">Split</span>`;
+}
+
+function card(i) {
+  const voted = i.myVote !== 0;
+  const pct = total(i) ? Math.round(i.up / total(i) * 100) : 0;
+  return `
+  <article class="idea" data-id="${i.id}">
+    <div class="idea-head">
+      <div>
+        <h2>${esc(i.text)}</h2>
+        ${i.desc ? `<p class="desc">${esc(i.desc)}</p>` : ""}
+      </div>
+      ${voted ? verdict(i) : ""}
+    </div>
+    <div class="meta">${ago(i.created)} · ${total(i)} vote${total(i) === 1 ? "" : "s"}</div>
+    <div class="votes">
+      <button class="vote good ${i.myVote === 1 ? "mine" : ""}" data-v="1">${ICON_UP}Good</button>
+      <button class="vote bad ${i.myVote === -1 ? "mine" : ""}" data-v="-1">${ICON_DOWN}Bad</button>
+    </div>
+    ${voted ? `
+    <div class="result">
+      <div class="track"><span style="width:${pct}%"></span></div>
+      <div class="split-row"><span class="g">${pct}% good</span><span class="b">${100 - pct}% bad</span></div>
+    </div>` : ""}
+  </article>`;
+}
+
+function render() {
+  const sorted = [...ideas].sort((a, b) => scorers[sort](b) - scorers[sort](a));
+  $("list").innerHTML = sorted.length ? sorted.map(card).join("")
+    : `<div class="empty">No ideas yet.<br><button class="post-btn" onclick="openSheet()">Post the first one</button></div>`;
+}
+
+async function load() {
+  try { ideas = await api.list(); render(); }
+  catch { if (!ideas.length) $("list").innerHTML = `<div class="empty">Couldn't load ideas. Check your connection.</div>`; }
+}
+
+$("list").addEventListener("click", async e => {
+  const btn = e.target.closest(".vote");
+  if (!btn) return;
+  const id = btn.closest(".idea").dataset.id;
+  const idea = ideas.find(i => i.id === id);
+  const v = Number(btn.dataset.v);
+  let updated;
+  try { updated = await api.vote(id, idea.myVote === v ? 0 : v); }
+  catch { toast("Vote didn't go through"); return; }
+  // The list may have been reloaded while the vote was in flight, so look both up fresh.
+  const current = ideas.find(i => i.id === id);
+  if (current) Object.assign(current, updated);
+  // Re-render just this card so the list doesn't jump around under your finger.
+  const el = document.querySelector(`.idea[data-id="${id}"]`);
+  if (el && current) el.outerHTML = card(current);
+  if (navigator.vibrate) navigator.vibrate(8);
+});
+
+$("tabs").addEventListener("click", e => {
+  const tab = e.target.closest(".tab");
+  if (!tab) return;
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t === tab));
+  sort = tab.dataset.sort;
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+function openSheet() {
+  $("err").textContent = "";
+  $("sheet").showModal();
+  setTimeout(() => $("text").focus(), 50);
+}
+$("newBtn").addEventListener("click", openSheet);
+$("closeBtn").addEventListener("click", () => $("sheet").close());
+$("sheet").addEventListener("click", e => { if (e.target === $("sheet")) $("sheet").close(); });
+
+$("text").addEventListener("input", () => {
+  const left = 140 - $("text").value.length;
+  $("count").textContent = left;
+  $("count").classList.toggle("over", left < 15);
+  $("postBtn").disabled = $("text").value.trim().length < 3;
+});
+$("text").addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); $("desc").focus(); }
+});
+
+$("post").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("err").textContent = "";
+  $("postBtn").disabled = true;
+  try {
+    const idea = await api.post($("text").value.trim(), $("desc").value.trim());
+    ideas.push(idea);
+    $("text").value = ""; $("desc").value = "";
+    $("text").dispatchEvent(new Event("input"));
+    $("sheet").close();
+    document.querySelector('.tab[data-sort="new"]').click();
+    toast("Posted");
+  } catch (err) {
+    $("err").textContent = err.message || "Something went wrong.";
+    $("postBtn").disabled = false;
+  }
+});
+
+load();
+setInterval(load, 15000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+</script>
+</body>
+</html>
